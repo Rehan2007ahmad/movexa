@@ -280,13 +280,7 @@ export default function NewMoviePage() {
 
         {/* Action Buttons matching ui.png */}
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-lg border border-[#e2e8f0] shadow-2xs transition-colors cursor-pointer"
-          >
-            <FileText size={14} className="text-slate-500" />
-            <span>Save Draft</span>
-          </button>
+          
 
           <button
             type="button"
@@ -325,9 +319,7 @@ export default function NewMoviePage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* =========================================================================
-            CARD 1: Movie Information matching ui.png
-           ========================================================================= */}
+        
         <div className="bg-white border border-[#e8ecf2] rounded-xl p-6 shadow-2xs space-y-5">
           <div className="flex items-center gap-2 text-[#0f172a] font-bold text-sm border-b border-[#f1f5f9] pb-3">
             <Clapperboard size={17} className="text-[#0f172a]" />
