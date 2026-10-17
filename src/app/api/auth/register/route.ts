@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         const user = await User.create({
             name, 
             email: email.toLowerCase(),
-            password: hashPassword,
+            password: hashedPassword,
             role: "user"
         })
         
