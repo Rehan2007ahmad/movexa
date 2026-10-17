@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Menu,
   Loader2,
@@ -10,9 +10,12 @@ import {
   ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
+  Bell,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import AdminSidebar, { ADMIN_NAV_SECTIONS } from "@/components/admin/AdminSidebar";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export default function AdminLayout({
   children,
@@ -21,7 +24,6 @@ export default function AdminLayout({
 }) {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -32,30 +34,25 @@ export default function AdminLayout({
     }
   }, [user, isLoading, router]);
 
-  const getCurrentSectionTitle = () => {
-    for (const section of ADMIN_NAV_SECTIONS) {
-      for (const item of section.items) {
-        if (
-          item.href === "/admin"
-            ? pathname === "/admin"
-            : pathname === item.href || pathname.startsWith(item.href + "/")
-        ) {
-          return item.label;
-        }
-      }
-    }
-    return "Admin";
-  };
-
   const handleLogout = async () => {
     await logout();
     router.push("/login");
   };
 
+  // Helper for initials (e.g. "Rehan Ahmad" -> "RA")
+  const getUserInitials = (name?: string) => {
+    if (!name) return "AD";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white text-neutral-900">
-        <Loader2 size={28} className="animate-spin text-orange-600 mb-3" />
+        <Loader2 size={28} className="animate-spin text-[#ff5500] mb-3" />
         <p className="text-xs uppercase tracking-wider text-neutral-500 font-mono">
           Verifying administrator session...
         </p>
@@ -65,9 +62,9 @@ export default function AdminLayout({
 
   if (!user || user.role !== "admin") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-neutral-50">
-        <div className="max-w-md w-full bg-white border border-neutral-200 rounded-lg p-8 text-center text-neutral-900 shadow-sm">
-          <div className="w-11 h-11 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#f8fafc]">
+        <div className="max-w-md w-full bg-white border border-[#e2e8f0] rounded-xl p-8 text-center text-neutral-900 shadow-sm">
+          <div className="w-11 h-11 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
             <ShieldAlert size={22} />
           </div>
           <h1 className="text-lg font-bold mb-2">Access Denied</h1>
@@ -76,7 +73,7 @@ export default function AdminLayout({
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-md text-xs font-semibold hover:bg-neutral-800 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-lg text-xs font-semibold hover:bg-neutral-800 transition-colors"
           >
             <ArrowLeft size={14} />
             <span>Return to Login</span>
@@ -87,8 +84,8 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-white text-neutral-900 font-sans selection:bg-orange-500 selection:text-white">
-      {/* Solid Black Sidebar */}
+    <div className="min-h-screen flex bg-white text-neutral-900 font-sans selection:bg-[#ff5500] selection:text-white">
+      {/* Deep Charcoal Sidebar */}
       <AdminSidebar
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
@@ -98,16 +95,16 @@ export default function AdminLayout({
         onLogout={handleLogout}
       />
 
-      {/* Main Content Area: Clean Minimal White Background */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#fafafa]">
-        {/* Top Header Bar */}
-        <header className="sticky top-0 z-20 h-14 bg-white border-b border-neutral-200/90 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      {/* Main Content Area: Soft off-white canvas matching ui.png */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#f8fafc]">
+        {/* Top Navbar matching ui.png */}
+        <header className="sticky top-0 z-20 h-16 bg-white border-b border-[#eef0f4] px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {/* Mobile menu toggle */}
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors cursor-pointer"
+              className="lg:hidden p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
               title="Open menu"
             >
               <Menu size={18} />
@@ -117,35 +114,58 @@ export default function AdminLayout({
             <button
               type="button"
               onClick={() => setIsCollapsed((prev) => !prev)}
-              className="hidden lg:flex p-1.5 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors cursor-pointer"
+              className="hidden lg:flex p-1.5 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer"
               title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {isCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
             </button>
 
-            {/* Breadcrumb route indicator */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-neutral-400 font-mono hidden sm:inline">Admin</span>
-              <span className="text-neutral-300 hidden sm:inline">/</span>
-              <span className="text-neutral-900 font-semibold tracking-tight">
-                {getCurrentSectionTitle()}
-              </span>
+            {/* Pill Search Input matching ui.png */}
+            <div className="relative hidden sm:flex items-center">
+              <Search
+                size={14}
+                className="absolute left-3.5 text-neutral-400 pointer-events-none"
+              />
+              <input
+                type="text"
+                placeholder="Search movies, cinemas, shows..."
+                className="w-72 sm:w-84 bg-[#f4f6fa] rounded-full pl-9 pr-4 py-2 text-xs text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-300 transition-all border-none"
+              />
             </div>
           </div>
 
-          {/* Right Header User Avatar */}
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-orange-600 text-white flex items-center justify-center font-bold text-[11px] shadow-2xs">
-              {user.name ? user.name.charAt(0) : "A"}
+          {/* Right Header: Notification Bell & User Profile matching ui.png */}
+          <div className="flex items-center gap-4">
+            {/* Notification Bell with red dot */}
+            <button
+              type="button"
+              className="relative p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors cursor-pointer"
+              title="Notifications"
+            >
+              <Bell size={17} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+            </button>
+
+            {/* User Profile matching ui.png */}
+            <div className="flex items-center gap-2.5 pl-2 cursor-pointer group">
+              <div className="w-8 h-8 rounded-full bg-[#0b0f17] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                {getUserInitials(user.name)}
+              </div>
+              <div className="hidden md:flex flex-col text-left">
+                <span className="text-xs font-bold text-neutral-900 leading-tight">
+                  {user.name || "Rehan Ahmad"}
+                </span>
+                <span className="text-[10px] text-neutral-400 font-medium leading-tight">
+                  Admin
+                </span>
+              </div>
+              <ChevronDown size={14} className="text-neutral-400 group-hover:text-neutral-700 transition-colors hidden sm:block" />
             </div>
-            <span className="text-xs text-neutral-700 font-medium hidden md:inline truncate max-w-[120px]">
-              {user.name}
-            </span>
           </div>
         </header>
 
         {/* Dynamic Nested Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 p-5 sm:p-7 lg:p-9">
           <div className="max-w-6xl mx-auto w-full">
             {children}
           </div>

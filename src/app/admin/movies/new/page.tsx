@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  Film,
   ArrowLeft,
   UploadCloud,
   Check,
@@ -13,28 +12,27 @@ import {
   Plus,
   Loader2,
   AlertCircle,
-  Clock,
-  Calendar,
+  Calendar as CalendarIcon,
   Sparkles,
-  Link as LinkIcon,
-  Star,
-  Layers,
-  Info,
+  Send,
+  FileText,
+  Clapperboard,
+  Image as ImageIcon,
+  Users,
+  CheckCircle2,
 } from "lucide-react";
 
 const GENRE_PRESETS = [
-  "Action",
   "Sci-Fi",
   "Drama",
-  "Thriller",
   "Adventure",
+  "Action",
+  "Thriller",
   "Horror",
   "IMAX",
   "Animation",
   "Comedy",
   "Crime",
-  "Romance",
-  "Mystery",
 ];
 
 const LANGUAGE_PRESETS = [
@@ -62,26 +60,31 @@ export default function NewMoviePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form states
+  // Form states matching ui.png presets
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [isSlugManual, setIsSlugManual] = useState(false);
   const [shortDescription, setShortDescription] = useState("");
   const [longDescription, setLongDescription] = useState("");
   const [trailerUrl, setTrailerUrl] = useState("");
-  const [genres, setGenres] = useState<string[]>(["Action", "Sci-Fi"]);
-  const [customGenre, setCustomGenre] = useState("");
+  const [genres, setGenres] = useState<string[]>(["Sci-Fi", "Drama", "Adventure"]);
+  const [isAddingGenre, setIsAddingGenre] = useState(false);
+  const [newGenreInput, setNewGenreInput] = useState("");
   const [language, setLanguage] = useState("English");
-  const [duration, setDuration] = useState<number | "">(120);
+  const [duration, setDuration] = useState<number | "">(169);
   const [releaseDate, setReleaseDate] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [director, setDirector] = useState("");
-  const [cast, setCast] = useState<string[]>([]);
-  const [castInput, setCastInput] = useState("");
-  const [rating, setRating] = useState<number | "">("");
+  const [cast, setCast] = useState<string[]>([
+    "Matthew McConaughey",
+    "Anne Hathaway",
+    "Zendaya",
+  ]);
+  const [isAddingCast, setIsAddingCast] = useState(false);
+  const [newCastInput, setNewCastInput] = useState("");
+  const [rating] = useState<number | "">(8.5);
   const [status, setStatus] = useState<"now_showing" | "coming_soon" | "ended">(
-    "coming_soon"
+    "now_showing"
   );
 
   // Thumbnail upload states
@@ -98,13 +101,11 @@ export default function NewMoviePage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
-  // Title change handler with auto-slug
+  // Title change with auto-slug
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setTitle(val);
-    if (!isSlugManual) {
-      setSlug(generateSlug(val));
-    }
+    setSlug(generateSlug(val));
   };
 
   // Thumbnail file upload handler
@@ -152,10 +153,11 @@ export default function NewMoviePage() {
 
   // Cast management
   const handleAddCast = () => {
-    const trimmed = castInput.trim();
+    const trimmed = newCastInput.trim();
     if (trimmed && !cast.includes(trimmed)) {
       setCast([...cast, trimmed]);
-      setCastInput("");
+      setNewCastInput("");
+      setIsAddingCast(false);
     }
   };
 
@@ -164,27 +166,18 @@ export default function NewMoviePage() {
   };
 
   // Genre management
-  const toggleGenre = (genre: string) => {
-    if (genres.includes(genre)) {
-      setGenres(genres.filter((g) => g !== genre));
-    } else {
-      setGenres([...genres, genre]);
-    }
-  };
-
-  const handleAddCustomGenre = () => {
-    const trimmed = customGenre.trim();
+  const handleAddGenre = () => {
+    const trimmed = newGenreInput.trim();
     if (trimmed && !genres.includes(trimmed)) {
       setGenres([...genres, trimmed]);
-      setCustomGenre("");
+      setNewGenreInput("");
+      setIsAddingGenre(false);
     }
   };
 
-  // Duration formatted helper
-  const formattedDuration =
-    typeof duration === "number" && duration > 0
-      ? `${Math.floor(duration / 60)}h ${duration % 60}m`
-      : "";
+  const handleRemoveGenre = (genre: string) => {
+    setGenres(genres.filter((g) => g !== genre));
+  };
 
   // Submit Handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -262,41 +255,44 @@ export default function NewMoviePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-16">
-      {/* Top Header & Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200 pb-4">
+    <div className="space-y-6 max-w-6xl mx-auto pb-16 font-sans">
+      {/* Top Breadcrumb Link matching ui.png */}
+      <div>
+        <Link
+          href="/admin/movies"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+        >
+          <ArrowLeft size={13} />
+          <span>Back to Movies</span>
+        </Link>
+      </div>
+
+      {/* Page Header Row with Save Draft & Publish Movie matching ui.png */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <Link
-            href="/admin/movies"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors mb-1.5 cursor-pointer"
-          >
-            <ArrowLeft size={13} />
-            <span>Back to Movies</span>
-          </Link>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 flex items-center gap-2.5">
-            <span>Upload New Movie</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 border border-orange-200 font-normal">
-              IMAX & 2D Cinema
-            </span>
+          <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight">
+            Add New Movie
           </h1>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Fill in the movie details, synopsis, screening attributes, and poster media.
+          <p className="text-xs text-[#64748b] mt-1">
+            Create a movie entry for your cinema catalog. Fill in all the details to get started.
           </p>
         </div>
 
-        {/* Top Action Buttons */}
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin/movies"
-            className="px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-neutral-900 bg-white border border-neutral-300 rounded-md transition-colors shadow-2xs"
+        {/* Action Buttons matching ui.png */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs rounded-lg border border-[#e2e8f0] shadow-2xs transition-colors cursor-pointer"
           >
-            Cancel
-          </Link>
+            <FileText size={14} className="text-slate-500" />
+            <span>Save Draft</span>
+          </button>
+
           <button
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || isUploadingImage}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 rounded-md transition-colors shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-[#ff5500] hover:bg-[#e64d00] disabled:opacity-50 rounded-lg shadow-sm transition-colors cursor-pointer"
           >
             {isSubmitting ? (
               <>
@@ -305,7 +301,7 @@ export default function NewMoviePage() {
               </>
             ) : (
               <>
-                <Check size={14} />
+                <Send size={13} className="rotate-45 -translate-y-0.5" />
                 <span>Publish Movie</span>
               </>
             )}
@@ -313,38 +309,36 @@ export default function NewMoviePage() {
         </div>
       </div>
 
-      {/* Success Notification */}
+      {/* Notifications */}
       {successBanner && (
-        <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2 animate-in fade-in">
-          <Check size={15} />
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2">
+          <Check size={16} />
           <span>{successBanner}</span>
         </div>
       )}
 
-      {/* Error Banner */}
       {errorBanner && (
-        <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2 animate-in fade-in">
-          <AlertCircle size={15} className="shrink-0" />
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
+          <AlertCircle size={16} className="shrink-0" />
           <span>{errorBanner}</span>
         </div>
       )}
 
-      {/* Form Grid */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* =========================================================================
-            LEFT COLUMN: Details, Synopses, Cast, Trailer (7 cols)
+            CARD 1: Movie Information matching ui.png
            ========================================================================= */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Card 1: Basic Information */}
-          <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 text-neutral-900 font-semibold text-xs border-b border-neutral-100 pb-2.5">
-              <Film size={15} className="text-orange-600" />
-              <span>Movie Title & Slug</span>
-            </div>
+        <div className="bg-white border border-[#e8ecf2] rounded-xl p-6 shadow-2xs space-y-5">
+          <div className="flex items-center gap-2 text-[#0f172a] font-bold text-sm border-b border-[#f1f5f9] pb-3">
+            <Clapperboard size={17} className="text-[#0f172a]" />
+            <span>Movie Information</span>
+          </div>
 
+          {/* Row 1: Title and URL Slug */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Title */}
             <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">
+              <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
                 Title <span className="text-rose-500">*</span>
               </label>
               <input
@@ -353,233 +347,117 @@ export default function NewMoviePage() {
                 placeholder="e.g. Dune: Part Two"
                 value={title}
                 onChange={handleTitleChange}
-                className="w-full bg-white border border-neutral-300 rounded-md px-3 py-2 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all"
+                className="w-full bg-white border border-[#e2e8f0] rounded-lg px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ff5500] transition-colors"
               />
               {fieldErrors.title && (
                 <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.title[0]}</p>
               )}
             </div>
 
-            {/* Slug */}
+            {/* URL Slug with Available check & Auto-generate button */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium text-neutral-700">
-                  URL Slug <span className="text-rose-500">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSlugManual(false);
-                    setSlug(generateSlug(title));
-                  }}
-                  className="text-[11px] text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1 cursor-pointer"
-                >
-                  <Sparkles size={11} />
-                  <span>Auto-generate</span>
-                </button>
-              </div>
-              <div className="flex items-center bg-neutral-50 border border-neutral-300 rounded-md px-3 py-1.5 focus-within:bg-white focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500/20 transition-all">
-                <span className="text-neutral-400 text-xs select-none pr-1">/movies/</span>
+              <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
+                URL Slug <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex items-center bg-white border border-[#e2e8f0] rounded-lg px-3 py-1.5 focus-within:border-[#ff5500] transition-colors">
                 <input
                   type="text"
                   required
                   placeholder="dune-part-two"
                   value={slug}
-                  onChange={(e) => {
-                    setIsSlugManual(true);
-                    setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"));
-                  }}
-                  className="w-full bg-transparent text-xs text-neutral-900 focus:outline-none font-mono"
+                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
+                  className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none font-mono"
                 />
+
+                {/* Available badge */}
+                {slug.length > 0 && (
+                  <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 px-2 shrink-0 select-none">
+                    <CheckCircle2 size={13} className="text-emerald-500" />
+                    <span>Available</span>
+                  </span>
+                )}
+
+                {/* Auto-generate button */}
+                <button
+                  type="button"
+                  onClick={() => setSlug(generateSlug(title))}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 border border-[#e2e8f0] px-2.5 py-1 rounded-md transition-colors shrink-0 shadow-2xs cursor-pointer ml-1"
+                >
+                  <Sparkles size={11} className="text-[#ff5500]" />
+                  <span>Auto-generate</span>
+                </button>
               </div>
               {fieldErrors.slug && (
                 <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.slug[0]}</p>
               )}
             </div>
-
-            {/* Short Description */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium text-neutral-700">
-                  Short Description <span className="text-rose-500">*</span>
-                </label>
-                <span
-                  className={`text-[10px] font-mono ${
-                    shortDescription.length < 20 || shortDescription.length > 200
-                      ? "text-neutral-400"
-                      : "text-emerald-600 font-semibold"
-                  }`}
-                >
-                  {shortDescription.length}/200 chars (min 20)
-                </span>
-              </div>
-              <textarea
-                rows={2}
-                required
-                placeholder="Brief logline shown on movie cards and banners (20 - 200 chars)..."
-                value={shortDescription}
-                onChange={(e) => setShortDescription(e.target.value)}
-                className="w-full bg-white border border-neutral-300 rounded-md p-2.5 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all resize-none"
-              />
-              {fieldErrors.shortDescription && (
-                <p className="text-[11px] text-rose-600 mt-1">
-                  {fieldErrors.shortDescription[0]}
-                </p>
-              )}
-            </div>
-
-            {/* Long Description */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium text-neutral-700">
-                  Long Synopsis <span className="text-rose-500">*</span>
-                </label>
-                <span
-                  className={`text-[10px] font-mono ${
-                    longDescription.length < 50 || longDescription.length > 1000
-                      ? "text-neutral-400"
-                      : "text-emerald-600 font-semibold"
-                  }`}
-                >
-                  {longDescription.length}/1000 chars (min 50)
-                </span>
-              </div>
-              <textarea
-                rows={4}
-                required
-                placeholder="Comprehensive cinema synopsis, story overview, and background details (50 - 1000 chars)..."
-                value={longDescription}
-                onChange={(e) => setLongDescription(e.target.value)}
-                className="w-full bg-white border border-neutral-300 rounded-md p-2.5 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all"
-              />
-              {fieldErrors.longDescription && (
-                <p className="text-[11px] text-rose-600 mt-1">
-                  {fieldErrors.longDescription[0]}
-                </p>
-              )}
-            </div>
           </div>
 
-          {/* Card 2: Cast & Director */}
-          <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 text-neutral-900 font-semibold text-xs border-b border-neutral-100 pb-2.5">
-              <Layers size={15} className="text-orange-600" />
-              <span>Credits & Cast</span>
-            </div>
-
-            {/* Director */}
-            <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">
-                Director <span className="text-neutral-400 text-[11px]">(Optional)</span>
+          {/* Row 2: Short Description */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-[#1e293b]">
+                Short Description <span className="text-rose-500">*</span>
               </label>
-              <input
-                type="text"
-                placeholder="e.g. Denis Villeneuve"
-                value={director}
-                onChange={(e) => setDirector(e.target.value)}
-                className="w-full bg-white border border-neutral-300 rounded-md px-3 py-2 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all"
-              />
+              <span className="text-[11px] font-mono text-slate-400">
+                {shortDescription.length}/200
+              </span>
             </div>
+            <textarea
+              rows={2}
+              required
+              placeholder="Brief tagline shown on movie cards and banners (20 - 200 chars)..."
+              value={shortDescription}
+              onChange={(e) => setShortDescription(e.target.value)}
+              className="w-full bg-white border border-[#e2e8f0] rounded-lg p-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ff5500] transition-colors resize-none"
+            />
+            {fieldErrors.shortDescription && (
+              <p className="text-[11px] text-rose-600 mt-1">
+                {fieldErrors.shortDescription[0]}
+              </p>
+            )}
+          </div>
 
-            {/* Cast Members */}
-            <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">
-                Cast Members <span className="text-rose-500">*</span>
+          {/* Row 3: Long Description */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold text-[#1e293b]">
+                Long Description <span className="text-rose-500">*</span>
               </label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  placeholder="e.g. Timothée Chalamet, Zendaya..."
-                  value={castInput}
-                  onChange={(e) => setCastInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddCast();
-                    }
-                  }}
-                  className="flex-1 bg-white border border-neutral-300 rounded-md px-3 py-1.5 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddCast}
-                  className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-md text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <Plus size={13} />
-                  <span>Add</span>
-                </button>
-              </div>
-
-              {/* Cast Chips */}
-              <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2 bg-neutral-50 border border-neutral-200 rounded-md">
-                {cast.length === 0 ? (
-                  <span className="text-neutral-400 text-xs italic p-0.5">
-                    No actors added yet. Type actor name and press Enter.
-                  </span>
-                ) : (
-                  cast.map((actor) => (
-                    <span
-                      key={actor}
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white text-neutral-800 text-xs border border-neutral-300 shadow-2xs"
-                    >
-                      <span>{actor}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCast(actor)}
-                        className="text-neutral-400 hover:text-rose-600 transition-colors"
-                      >
-                        <X size={11} />
-                      </button>
-                    </span>
-                  ))
-                )}
-              </div>
-              {fieldErrors.cast && (
-                <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.cast[0]}</p>
-              )}
+              <span className="text-[11px] font-mono text-slate-400">
+                {longDescription.length}/1000
+              </span>
             </div>
-
-            {/* Trailer URL */}
-            <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">
-                Official Trailer URL <span className="text-neutral-400 text-[11px]">(Optional)</span>
-              </label>
-              <div className="relative">
-                <LinkIcon
-                  size={13}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
-                />
-                <input
-                  type="url"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  value={trailerUrl}
-                  onChange={(e) => setTrailerUrl(e.target.value)}
-                  className="w-full bg-white border border-neutral-300 rounded-md pl-8 pr-3 py-2 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-all"
-                />
-              </div>
-              {fieldErrors.trailerUrl && (
-                <p className="text-[11px] text-rose-600 mt-1">
-                  {fieldErrors.trailerUrl[0]}
-                </p>
-              )}
-            </div>
+            <textarea
+              rows={3}
+              required
+              placeholder="Comprehensive cinema synopsis, story overview, and background (50 - 1000 chars)..."
+              value={longDescription}
+              onChange={(e) => setLongDescription(e.target.value)}
+              className="w-full bg-white border border-[#e2e8f0] rounded-lg p-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ff5500] transition-colors resize-none"
+            />
+            {fieldErrors.longDescription && (
+              <p className="text-[11px] text-rose-600 mt-1">
+                {fieldErrors.longDescription[0]}
+              </p>
+            )}
           </div>
         </div>
 
         {/* =========================================================================
-            RIGHT COLUMN: Poster Upload, Status, Genres, Duration, Date, Rating (5 cols)
+            ROW 2: Poster (left) and Movie Details (right) matching ui.png
            ========================================================================= */}
-        <div className="lg:col-span-5 space-y-5">
-          {/* Card 3: Cloudinary Poster Upload */}
-          <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-2xs space-y-3.5">
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
-              <span className="text-neutral-900 font-semibold text-xs flex items-center gap-1.5">
-                <UploadCloud size={15} className="text-orange-600" />
-                <span>Poster Thumbnail</span>
-              </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-600 border border-neutral-200">
-                Cloudinary
-              </span>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Poster Box (5 cols) */}
+          <div className="lg:col-span-5 bg-white border border-[#e8ecf2] rounded-xl p-6 shadow-2xs space-y-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-[#0f172a] font-bold text-sm border-b border-[#f1f5f9] pb-3">
+                <ImageIcon size={17} className="text-[#0f172a]" />
+                <span>Poster</span>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                Upload a high-quality movie poster (JPG, PNG or WEBP).
+              </p>
             </div>
 
             <input
@@ -590,9 +468,9 @@ export default function NewMoviePage() {
               className="hidden"
             />
 
-            {/* Poster Upload Box / Preview */}
+            {/* Dashed upload box matching ui.png */}
             {thumbnail ? (
-              <div className="relative rounded-md overflow-hidden border border-neutral-200 group bg-neutral-950">
+              <div className="relative rounded-xl overflow-hidden border border-[#e2e8f0] group bg-black mt-2">
                 <div className="relative aspect-2/3 w-full">
                   <Image
                     src={thumbnail.url}
@@ -605,21 +483,21 @@ export default function NewMoviePage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-3 py-1.5 bg-white text-neutral-900 rounded-md text-xs font-semibold hover:bg-neutral-100 transition-colors cursor-pointer shadow-xs"
+                    className="px-3.5 py-1.5 bg-white text-slate-900 rounded-lg text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     Change Image
                   </button>
                   <button
                     type="button"
                     onClick={() => setThumbnail(null)}
-                    className="px-3 py-1.5 bg-rose-600 text-white rounded-md text-xs font-semibold hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
+                    className="px-3.5 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 transition-colors cursor-pointer"
                   >
                     Remove
                   </button>
                 </div>
-                <div className="p-2 bg-white border-t border-neutral-200 flex items-center justify-between text-[11px] text-neutral-600">
+                <div className="p-2.5 bg-white border-t border-[#e2e8f0] flex items-center justify-between text-[11px] text-slate-600">
                   <span className="truncate font-mono">{thumbnail.publicId}</span>
-                  <span className="text-emerald-600 font-medium flex items-center gap-1 shrink-0">
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1 shrink-0">
                     <Check size={12} /> Ready
                   </span>
                 </div>
@@ -627,32 +505,35 @@ export default function NewMoviePage() {
             ) : (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors ${
-                  isUploadingImage
-                    ? "border-neutral-300 bg-neutral-50 pointer-events-none"
-                    : "border-neutral-300 hover:border-orange-500 bg-neutral-50/50 hover:bg-orange-50/20"
+                className={`border-2 border-dashed border-[#d8e0ec] hover:border-[#ff5500] rounded-xl p-8 bg-[#fbfcfd] text-center flex flex-col items-center justify-center cursor-pointer transition-colors mt-2 ${
+                  isUploadingImage ? "opacity-60 pointer-events-none" : ""
                 }`}
               >
                 {isUploadingImage ? (
-                  <div className="py-7 flex flex-col items-center gap-2.5">
-                    <Loader2 size={26} className="animate-spin text-orange-600" />
-                    <p className="text-xs text-neutral-600 font-medium">
-                      Uploading to Cloudinary...
-                    </p>
+                  <div className="py-6 flex flex-col items-center gap-2.5">
+                    <Loader2 size={28} className="animate-spin text-[#ff5500]" />
+                    <p className="text-xs text-slate-600 font-medium">Uploading to Cloudinary...</p>
                   </div>
                 ) : (
-                  <div className="py-5 flex flex-col items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-md bg-orange-50 text-orange-600 border border-orange-100 flex items-center justify-center">
-                      <UploadCloud size={20} />
+                  <div className="flex flex-col items-center">
+                    {/* Orange round cloud upload icon */}
+                    <div className="w-12 h-12 rounded-full bg-[#fff4ed] text-[#ff5500] flex items-center justify-center mx-auto mb-3">
+                      <UploadCloud size={24} />
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-neutral-900">
-                        Click to upload poster image
-                      </p>
-                      <p className="text-[11px] text-neutral-500 mt-0.5">
-                        PNG, JPG, WEBP, or AVIF (Recommended 2:3 ratio)
-                      </p>
-                    </div>
+                    <p className="text-xs font-bold text-[#0f172a]">
+                      Click to upload poster image
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-1 mb-4">
+                      JPG, PNG or WEBP · Max 5MB
+                    </p>
+
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white text-[#334155] hover:text-black border border-[#e2e8f0] rounded-lg text-xs font-semibold shadow-2xs hover:bg-slate-50 transition-colors"
+                    >
+                      <UploadCloud size={13} />
+                      <span>Choose File</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -671,104 +552,94 @@ export default function NewMoviePage() {
             )}
           </div>
 
-          {/* Card 4: Screening Attributes */}
-          <div className="bg-white border border-neutral-200 rounded-lg p-5 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 text-neutral-900 font-semibold text-xs border-b border-neutral-100 pb-2.5">
-              <Info size={15} className="text-orange-600" />
-              <span>Status & Details</span>
+          {/* Right: Movie Details Box (7 cols) */}
+          <div className="lg:col-span-7 bg-white border border-[#e8ecf2] rounded-xl p-6 shadow-2xs space-y-5">
+            <div className="flex items-center gap-2 text-[#0f172a] font-bold text-sm border-b border-[#f1f5f9] pb-3">
+              <Clapperboard size={17} className="text-[#0f172a]" />
+              <span>Movie Details</span>
             </div>
 
-            {/* Status */}
-            <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">
-                Release Status
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {[
-                  { id: "now_showing", label: "Now Showing", active: "bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold" },
-                  { id: "coming_soon", label: "Coming Soon", active: "bg-orange-50 text-orange-800 border-orange-300 font-semibold" },
-                  { id: "ended", label: "Ended", active: "bg-neutral-100 text-neutral-800 border-neutral-300 font-semibold" },
-                ].map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setStatus(s.id as "now_showing" | "coming_soon" | "ended")}
-                    className={`py-1.5 px-1 text-center text-xs font-medium rounded-md border transition-all cursor-pointer ${
-                      status === s.id
-                        ? `${s.active} shadow-2xs`
-                        : "bg-white border-neutral-200 text-neutral-600 hover:bg-neutral-50"
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Genres */}
-            <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">
-                Genres <span className="text-rose-500">*</span>
-              </label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {GENRE_PRESETS.map((g) => {
-                  const isSelected = genres.includes(g);
-                  return (
-                    <button
+            {/* Row 1: Genre & Language */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5">
+              {/* Genre (7 cols) */}
+              <div className="sm:col-span-7">
+                <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
+                  Genre <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {genres.map((g) => (
+                    <span
                       key={g}
-                      type="button"
-                      onClick={() => toggleGenre(g)}
-                      className={`px-2 py-0.5 rounded-md text-xs font-medium border transition-colors cursor-pointer ${
-                        isSelected
-                          ? "bg-orange-600 text-white border-orange-600"
-                          : "bg-neutral-100 border-neutral-200 text-neutral-700 hover:bg-neutral-200"
-                      }`}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#f1f5f9] text-[#334155] text-xs font-medium rounded-lg"
                     >
-                      {g}
+                      <span>{g}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveGenre(g)}
+                        className="text-slate-400 hover:text-slate-700 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </span>
+                  ))}
+
+                  {/* Add genre input/button */}
+                  {isAddingGenre ? (
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Genre..."
+                        value={newGenreInput}
+                        onChange={(e) => setNewGenreInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddGenre();
+                          }
+                        }}
+                        className="w-24 bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#ff5500]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddGenre}
+                        className="p-1 bg-[#ff5500] text-white rounded-md hover:bg-[#e64d00]"
+                      >
+                        <Check size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingGenre(false)}
+                        className="p-1 text-slate-400 hover:text-slate-700"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingGenre(true)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-50 border border-[#e2e8f0] text-slate-600 text-xs font-medium rounded-lg transition-colors shadow-2xs"
+                    >
+                      <Plus size={13} />
+                      <span>Add genre</span>
                     </button>
-                  );
-                })}
+                  )}
+                </div>
+                {fieldErrors.genre && (
+                  <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.genre[0]}</p>
+                )}
               </div>
 
-              {/* Custom Genre Adder */}
-              <div className="flex gap-1.5">
-                <input
-                  type="text"
-                  placeholder="Other genre..."
-                  value={customGenre}
-                  onChange={(e) => setCustomGenre(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddCustomGenre();
-                    }
-                  }}
-                  className="flex-1 bg-white border border-neutral-300 rounded-md px-2.5 py-1 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-orange-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddCustomGenre}
-                  className="px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 text-white rounded-md text-xs font-medium transition-colors cursor-pointer"
-                >
-                  Add
-                </button>
-              </div>
-              {fieldErrors.genre && (
-                <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.genre[0]}</p>
-              )}
-            </div>
-
-            {/* Language & Duration in 2 cols */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {/* Language */}
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
+              {/* Language (5 cols) */}
+              <div className="sm:col-span-5">
+                <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
                   Language <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full bg-white border border-neutral-300 rounded-md px-2.5 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-orange-500"
+                  className="w-full bg-white border border-[#e2e8f0] rounded-lg px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#ff5500] cursor-pointer"
                 >
                   {LANGUAGE_PRESETS.map((lang) => (
                     <option key={lang} value={lang}>
@@ -776,122 +647,208 @@ export default function NewMoviePage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Duration */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-neutral-700">
-                    Duration (min) <span className="text-rose-500">*</span>
-                  </label>
-                  {formattedDuration && (
-                    <span className="text-[10px] text-neutral-400 font-mono">
-                      {formattedDuration}
-                    </span>
-                  )}
-                </div>
-                <div className="relative">
-                  <Clock
-                    size={13}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400"
-                  />
-                  <input
-                    type="number"
-                    min={1}
-                    required
-                    placeholder="120"
-                    value={duration}
-                    onChange={(e) =>
-                      setDuration(e.target.value ? parseInt(e.target.value) : "")
-                    }
-                    className="w-full bg-white border border-neutral-300 rounded-md pl-7 pr-2.5 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-orange-500 font-mono"
-                  />
-                </div>
-                {fieldErrors.duration && (
-                  <p className="text-[11px] text-rose-600 mt-1">
-                    {fieldErrors.duration[0]}
-                  </p>
+                {fieldErrors.language && (
+                  <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.language[0]}</p>
                 )}
               </div>
             </div>
 
-            {/* Release Date & Rating in 2 cols */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {/* Release Date */}
+            {/* Row 2: Duration & Release Date */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Duration with min addon */}
               <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
+                <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
+                  Duration <span className="text-rose-500">*</span>
+                </label>
+                <div className="flex items-center border border-[#e2e8f0] rounded-lg overflow-hidden bg-white focus-within:border-[#ff5500] transition-colors">
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    placeholder="e.g. 169"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value ? parseInt(e.target.value) : "")}
+                    className="w-full px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+                  />
+                  <span className="px-3 py-2 text-xs text-slate-500 bg-[#f8fafc] border-l border-[#e2e8f0] select-none font-medium">
+                    min
+                  </span>
+                </div>
+                {fieldErrors.duration && (
+                  <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.duration[0]}</p>
+                )}
+              </div>
+
+              {/* Release Date with calendar icon */}
+              <div>
+                <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
                   Release Date <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <Calendar
-                    size={13}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                  <CalendarIcon
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
                   />
                   <input
                     type="date"
                     required
                     value={releaseDate}
                     onChange={(e) => setReleaseDate(e.target.value)}
-                    className="w-full bg-white border border-neutral-300 rounded-md pl-7 pr-2.5 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-orange-500"
+                    className="w-full bg-white border border-[#e2e8f0] rounded-lg pl-9 pr-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#ff5500]"
                   />
                 </div>
                 {fieldErrors.releaseDate && (
-                  <p className="text-[11px] text-rose-600 mt-1">
-                    {fieldErrors.releaseDate[0]}
-                  </p>
-                )}
-              </div>
-
-              {/* Rating */}
-              <div>
-                <label className="block text-xs font-medium text-neutral-700 mb-1">
-                  Rating <span className="text-neutral-400 text-[11px]">(0-10)</span>
-                </label>
-                <div className="relative">
-                  <Star
-                    size={13}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-amber-500"
-                  />
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    max={10}
-                    placeholder="8.5"
-                    value={rating}
-                    onChange={(e) =>
-                      setRating(e.target.value ? parseFloat(e.target.value) : "")
-                    }
-                    className="w-full bg-white border border-neutral-300 rounded-md pl-7 pr-2.5 py-1.5 text-xs text-neutral-900 focus:outline-none focus:border-orange-500 font-mono"
-                  />
-                </div>
-                {fieldErrors.rating && (
-                  <p className="text-[11px] text-rose-600 mt-1">
-                    {fieldErrors.rating[0]}
-                  </p>
+                  <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.releaseDate[0]}</p>
                 )}
               </div>
             </div>
+
+            {/* Row 3: Status 3 Radio-buttons matching ui.png */}
+            <div>
+              <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
+                Status <span className="text-rose-500">*</span>
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {/* Now Showing */}
+                <button
+                  type="button"
+                  onClick={() => setStatus("now_showing")}
+                  className={`py-2 px-3 text-center text-xs font-semibold rounded-lg border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    status === "now_showing"
+                      ? "border-emerald-500 bg-[#f0fdf4] text-emerald-800 shadow-2xs"
+                      : "border-[#e2e8f0] bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>Now Showing</span>
+                </button>
+
+                {/* Coming Soon */}
+                <button
+                  type="button"
+                  onClick={() => setStatus("coming_soon")}
+                  className={`py-2 px-3 text-center text-xs font-semibold rounded-lg border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    status === "coming_soon"
+                      ? "border-amber-500 bg-[#fffbeb] text-amber-800 shadow-2xs"
+                      : "border-[#e2e8f0] bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span>Coming Soon</span>
+                </button>
+
+                {/* Ended */}
+                <button
+                  type="button"
+                  onClick={() => setStatus("ended")}
+                  className={`py-2 px-3 text-center text-xs font-semibold rounded-lg border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    status === "ended"
+                      ? "border-slate-400 bg-slate-100 text-slate-800 shadow-2xs"
+                      : "border-[#e2e8f0] bg-white text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  <span>Ended</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            CARD 3: Cast & Crew matching ui.png
+           ========================================================================= */}
+        <div className="bg-white border border-[#e8ecf2] rounded-xl p-6 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2 text-[#0f172a] font-bold text-sm border-b border-[#f1f5f9] pb-3">
+            <Users size={17} className="text-[#0f172a]" />
+            <span>Cast & Crew</span>
           </div>
 
-          {/* Bottom Submit Button Card */}
-          <button
-            type="submit"
-            disabled={isSubmitting || isUploadingImage}
-            className="w-full py-2.5 px-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs rounded-md transition-all shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 size={15} className="animate-spin" />
-                <span>Publishing to Box Office...</span>
-              </>
-            ) : (
-              <>
-                <Check size={15} />
-                <span>Publish Movie</span>
-              </>
-            )}
-          </button>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Director (5 cols) */}
+            <div className="md:col-span-5">
+              <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
+                Director
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Christopher Nolan"
+                value={director}
+                onChange={(e) => setDirector(e.target.value)}
+                className="w-full bg-white border border-[#e2e8f0] rounded-lg px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#ff5500] transition-colors"
+              />
+            </div>
+
+            {/* Cast (7 cols) */}
+            <div className="md:col-span-7">
+              <label className="block text-xs font-semibold text-[#1e293b] mb-1.5">
+                Cast <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {cast.map((actor) => (
+                  <span
+                    key={actor}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#f1f5f9] text-[#334155] text-xs font-medium rounded-lg"
+                  >
+                    <span>{actor}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCast(actor)}
+                      className="text-slate-400 hover:text-slate-700 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+
+                {/* Add Cast Member */}
+                {isAddingCast ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Actor name..."
+                      value={newCastInput}
+                      onChange={(e) => setNewCastInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddCast();
+                        }
+                      }}
+                      className="w-36 bg-white border border-[#e2e8f0] rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#ff5500]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCast}
+                      className="p-1 bg-[#ff5500] text-white rounded-md hover:bg-[#e64d00]"
+                    >
+                      <Check size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingCast(false)}
+                      className="p-1 text-slate-400 hover:text-slate-700"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCast(true)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-50 border border-[#e2e8f0] text-slate-600 text-xs font-medium rounded-lg transition-colors shadow-2xs"
+                  >
+                    <Plus size={13} />
+                    <span>Add cast member</span>
+                  </button>
+                )}
+              </div>
+              {fieldErrors.cast && (
+                <p className="text-[11px] text-rose-600 mt-1">{fieldErrors.cast[0]}</p>
+              )}
+            </div>
+          </div>
         </div>
       </form>
     </div>
