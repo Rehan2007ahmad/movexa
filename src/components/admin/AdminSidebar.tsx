@@ -9,15 +9,11 @@ import {
   Calendar,
   Ticket,
   Users,
-  CreditCard,
-  DollarSign,
-  Tag,
   Settings,
   ChevronLeft,
   ChevronRight,
   LogOut,
   X,
-  ExternalLink,
 } from "lucide-react";
 import { AuthUser } from "@/context/AuthContext";
 
@@ -45,19 +41,6 @@ export const ADMIN_NAV_SECTIONS: NavSection[] = [
       { id: "showtimes", label: "Showtimes", icon: Calendar, href: "/admin/showtimes" },
       { id: "bookings", label: "Bookings", icon: Ticket, href: "/admin/bookings" },
       { id: "customers", label: "Customers", icon: Users, href: "/admin/customers" },
-    ],
-  },
-  {
-    group: "BOX OFFICE & FINANCE",
-    items: [
-      { id: "payments", label: "Payments", icon: CreditCard, href: "/admin/payments" },
-      { id: "pricing", label: "Formats & Pricing", icon: DollarSign, href: "/admin/pricing" },
-    ],
-  },
-  {
-    group: "MARKETING",
-    items: [
-      { id: "coupons", label: "Coupons & Passes", icon: Tag, href: "/admin/coupons" },
     ],
   },
   {
@@ -104,7 +87,7 @@ export default function AdminSidebar({
           isCollapsed ? "w-20 p-3" : "w-64 p-4"
         }`}
       >
-        <div className="space-y-6 overflow-y-auto overflow-x-hidden pr-0.5">
+        <div className="space-y-6 overflow-y-auto overflow-x-hidden no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* Header Brand & Collapse Toggle */}
           <div
             className={`flex items-center ${
@@ -259,7 +242,7 @@ export default function AdminSidebar({
 
           {/* Drawer Panel */}
           <div className="relative w-64 bg-[#0e0e11] text-neutral-400 h-full p-4 flex flex-col justify-between z-10 shadow-2xl animate-in slide-in-from-left duration-200">
-            <div className="space-y-6 overflow-y-auto">
+            <div className="space-y-6 overflow-y-auto no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {/* Drawer Top */}
               <div className="flex items-center justify-between px-2 py-1">
                 <div className="flex items-center gap-2.5">
