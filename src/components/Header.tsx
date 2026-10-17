@@ -46,6 +46,10 @@ export default function Header() {
     { label: "My Bookings", href: user ? "/#bookings" : "/login" },
   ];
 
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-neutral-200">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between gap-4">
