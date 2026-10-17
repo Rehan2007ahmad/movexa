@@ -468,86 +468,76 @@ export default function NewMoviePage() {
               className="hidden"
             />
 
-            {/* Poster Upload Frame - Strictly Fixed 2:3 Ratio */}
-            <div className="relative w-full aspect-[2/3] max-w-[300px] mx-auto rounded-xl overflow-hidden border border-[#e2e8f0] bg-[#fbfcfd] mt-2">
-              {thumbnail ? (
-                <div className="relative w-full h-full group">
+            {/* Dashed upload box matching ui.png */}
+            {thumbnail ? (
+              <div className="relative rounded-xl overflow-hidden border border-[#e2e8f0] group bg-black mt-2">
+                <div className="relative aspect-2/3 w-full">
                   <Image
                     src={thumbnail.url}
                     alt="Uploaded movie poster"
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 300px"
-                    priority
                   />
-                  {/* Hover Overlay with Change / Remove actions */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4 z-10">
+                </div>
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3.5 py-1.5 bg-white text-slate-900 rounded-lg text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    Change Image
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setThumbnail(null)}
+                    className="px-3.5 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 transition-colors cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="p-2.5 bg-white border-t border-[#e2e8f0] flex items-center justify-between text-[11px] text-slate-600">
+                  <span className="truncate font-mono">{thumbnail.publicId}</span>
+                  <span className="text-emerald-600 font-semibold flex items-center gap-1 shrink-0">
+                    <Check size={12} /> Ready
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed border-[#d8e0ec] hover:border-[#ff5500] rounded-xl p-8 bg-[#fbfcfd] text-center flex flex-col items-center justify-center cursor-pointer transition-colors mt-2 ${
+                  isUploadingImage ? "opacity-60 pointer-events-none" : ""
+                }`}
+              >
+                {isUploadingImage ? (
+                  <div className="py-6 flex flex-col items-center gap-2.5">
+                    <Loader2 size={28} className="animate-spin text-[#ff5500]" />
+                    <p className="text-xs text-slate-600 font-medium">Uploading to Cloudinary...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    {/* Orange round cloud upload icon */}
+                    <div className="w-12 h-12 rounded-full bg-[#fff4ed] text-[#ff5500] flex items-center justify-center mx-auto mb-3">
+                      <UploadCloud size={24} />
+                    </div>
+                    <p className="text-xs font-bold text-[#0f172a]">
+                      Click to upload poster image
+                    </p>
+                    <p className="text-[11px] text-slate-400 mt-1 mb-4">
+                      JPG, PNG or WEBP · Max 5MB
+                    </p>
+
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer shadow-md"
+                      className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white text-[#334155] hover:text-black border border-[#e2e8f0] rounded-lg text-xs font-semibold shadow-2xs hover:bg-slate-50 transition-colors"
                     >
-                      Change Image
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setThumbnail(null)}
-                      className="px-4 py-2 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 transition-colors cursor-pointer shadow-md"
-                    >
-                      Remove
+                      <UploadCloud size={13} />
+                      <span>Choose File</span>
                     </button>
                   </div>
-
-                  {/* Ready Badge overlay */}
-                  <div className="absolute bottom-2.5 left-2.5 right-2.5 bg-black/75 backdrop-blur-xs border border-white/20 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-[11px] text-white z-10">
-                    <span className="truncate font-mono text-[10px] text-slate-300 max-w-[140px]">
-                      {thumbnail.publicId}
-                    </span>
-                    <span className="text-emerald-400 font-semibold flex items-center gap-1 shrink-0 text-[10px]">
-                      <Check size={11} /> 2:3 Ready
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`w-full h-full border-2 border-dashed border-[#d8e0ec] hover:border-[#ff5500] rounded-xl p-6 text-center flex flex-col items-center justify-center cursor-pointer transition-colors ${
-                    isUploadingImage ? "opacity-60 pointer-events-none" : ""
-                  }`}
-                >
-                  {isUploadingImage ? (
-                    <div className="flex flex-col items-center gap-2.5">
-                      <Loader2 size={32} className="animate-spin text-[#ff5500]" />
-                      <p className="text-xs text-slate-600 font-medium">Uploading to Cloudinary...</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center">
-                      {/* Orange round cloud upload icon */}
-                      <div className="w-12 h-12 rounded-full bg-[#fff4ed] text-[#ff5500] flex items-center justify-center mx-auto mb-3 shadow-2xs">
-                        <UploadCloud size={24} />
-                      </div>
-                      <p className="text-xs font-bold text-[#0f172a]">
-                        Click to upload poster image
-                      </p>
-                      <p className="text-[11px] text-slate-400 mt-1 mb-1">
-                        JPG, PNG or WEBP · Max 5MB
-                      </p>
-                      <span className="inline-block text-[10px] font-mono font-semibold text-[#ff5500] bg-[#fff4ed] px-2 py-0.5 rounded-md mb-4">
-                        800 × 1200 px (2:3)
-                      </span>
-
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white text-[#334155] hover:text-black border border-[#e2e8f0] rounded-lg text-xs font-semibold shadow-2xs hover:bg-slate-50 transition-colors cursor-pointer"
-                      >
-                        <UploadCloud size={13} />
-                        <span>Choose File</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {imageUploadError && (
               <p className="text-xs text-rose-600 mt-1 flex items-center gap-1">
