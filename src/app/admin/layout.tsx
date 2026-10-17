@@ -27,14 +27,12 @@ export default function AdminLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // Route security check
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "admin")) {
       router.push("/login");
     }
   }, [user, isLoading, router]);
 
-  // Determine current section title from pathname
   const getCurrentSectionTitle = () => {
     for (const section of ADMIN_NAV_SECTIONS) {
       for (const item of section.items) {
@@ -55,16 +53,16 @@ export default function AdminLayout({
     router.push("/login");
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0e] text-white">
-  //       <Loader2 size={32} className="animate-spin text-white mb-3" />
-  //       <p className="text-xs uppercase tracking-widest text-neutral-400 font-mono">
-  //         Verifying administrator session...
-  //       </p>
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0c0c0e] text-white">
+        <Loader2 size={32} className="animate-spin text-white mb-3" />
+        <p className="text-xs uppercase tracking-widest text-neutral-400 font-mono">
+          Verifying administrator session...
+        </p>
+      </div>
+    );
+  }
 
   if (!user || user.role !== "admin") {
     return (
@@ -91,7 +89,6 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen flex bg-[#0c0c0e] text-neutral-100 font-sans selection:bg-neutral-800 selection:text-white">
-      {/* Responsive & Collapsible Sidebar */}
       <AdminSidebar
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
@@ -138,15 +135,6 @@ export default function AdminLayout({
 
           {/* Right Header Actions */}
           <div className="flex items-center gap-3">
-            {/* <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg transition-colors shadow-2xs"
-              title="Open public cinema storefront"
-            >
-              <Globe size={13} />
-              <span className="hidden sm:inline">Storefront</span>
-            </Link> */}
-
             <div className="h-4 w-px bg-neutral-800 hidden sm:block" />
 
             <div className="flex items-center gap-2 pl-1">

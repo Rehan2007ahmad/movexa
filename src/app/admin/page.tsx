@@ -6,7 +6,6 @@ import { LayoutDashboard } from "lucide-react";
 export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
-      {/* Page Title & Subtitle */}
       <div>
         <div className="flex items-center gap-2 text-neutral-400 mb-1">
           <LayoutDashboard size={18} />
