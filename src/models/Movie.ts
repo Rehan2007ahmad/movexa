@@ -2,11 +2,11 @@ import mongoose, {Schema, Model, Document} from "mongoose";
 
 export type MovieStatus = "now_showing" | "coming_soon" | "ended";
 
-export interface IMovie extends Document {
+export interface IMovie {
     title: string;
     slug: string;
     shortDescription: string;
-    longdescription: string;
+    longDescription: string;
 
     thumbnail:{
         url: string;
@@ -51,7 +51,7 @@ const movieSchema = new Schema<IMovie>({
     longDescription: {
         type: String,
         required: true,
-        minlength: 50,
+        minlength: 50,  
         maxlength: 1000,
         trim: true
     },
