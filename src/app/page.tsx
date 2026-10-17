@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface HeroMovie {
   id: string;
@@ -170,6 +171,7 @@ const NOW_SHOWING_MOVIES: MovieCard[] = [
 
 export default function Home() {
   const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
+  const { user } = useAuth();
 
   const prevHero = () => {
     setCurrentHeroIdx((prev) =>
@@ -236,7 +238,13 @@ export default function Home() {
             {/* Actions */}
             <div className="pt-2 flex items-center gap-4">
               <Link
-                href="/login"
+                href={user ? "#" : "/login"}
+                onClick={(e) => {
+                  if (user) {
+                    e.preventDefault();
+                    alert(`Welcome, ${user.name}! Booking flow for "${current.title}" will open.`);
+                  }
+                }}
                 className="bg-[#e11d48] hover:bg-[#be123c] text-white px-5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-xs transition-colors"
               >
                 <span>Book Tickets</span>

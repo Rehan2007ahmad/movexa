@@ -1,19 +1,67 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const router = useRouter();
+  const { user, login } = useAuth();
+
+  // If already logged in, redirect accordingly
+  useEffect(() => {
+    if (user) {
+      if (user.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [user, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // UI only - ready for API hookup
+    setErrorMessage(null);
+
+    if (!email || !password) {
+      setErrorMessage("Please enter both your email address and password.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await login(email, password);
+
+      if (!result.success) {
+        setErrorMessage(result.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check role and redirect securely
+      if (result.user?.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
+      router.refresh();
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "An unexpected error occurred. Please try again."
+      );
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,12 +116,20 @@ export default function LoginPage() {
             <div className="mb-7">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 font-sans flex items-center gap-2">
                 <span>Welcome Back</span>
-                <span className="inline-block animate-wiggle">👋</span>
+                <span className="inline-block">👋</span>
               </h1>
               <p className="text-xs sm:text-sm text-neutral-500 mt-1">
                 Login to your Movexa account
               </p>
             </div>
+
+            {/* Error Message Alert */}
+            {errorMessage && (
+              <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 flex items-start gap-2.5 animate-in fade-in">
+                <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -99,7 +155,8 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all"
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -126,7 +183,8 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all"
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
@@ -152,7 +210,10 @@ export default function LoginPage() {
                 </label>
                 <a
                   href="#forgot"
-                  onClick={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    alert("Password reset will be available soon.");
+                  }}
                   className="text-neutral-700 hover:text-black font-medium transition-colors"
                 >
                   Forgot password?
@@ -162,10 +223,20 @@ export default function LoginPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full mt-2 py-3 px-4 bg-[#111827] hover:bg-black text-white text-sm font-semibold rounded-lg shadow-xs hover:shadow-sm active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full mt-2 py-3 px-4 bg-[#111827] hover:bg-black text-white text-sm font-semibold rounded-lg shadow-xs hover:shadow-sm active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <span>Login</span>
-                <ArrowRight size={15} />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Login</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             </form>
 
@@ -182,6 +253,7 @@ export default function LoginPage() {
             {/* Social Button (Google) */}
             <button
               type="button"
+              onClick={() => alert("Google OAuth integration coming soon.")}
               className="w-full py-2.5 px-4 border border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50 rounded-lg text-xs sm:text-sm font-medium text-neutral-700 flex items-center justify-center gap-2.5 transition-all cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">

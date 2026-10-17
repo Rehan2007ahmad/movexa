@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -12,10 +14,58 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const router = useRouter();
+  const { user, register } = useAuth();
+
+  // If already logged in, redirect to home
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [user, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // UI only - ready for API hookup
+    setErrorMessage(null);
+
+    if (!name.trim() || !email.trim() || !password) {
+      setErrorMessage("Please fill in all required fields.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMessage("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match. Please verify.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await register(name.trim(), email.trim().toLowerCase(), password);
+
+      if (!result.success) {
+        setErrorMessage(result.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Registration successful and session established
+      router.push("/");
+      router.refresh();
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "An unexpected error occurred. Please try again."
+      );
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,6 +126,14 @@ export default function RegisterPage() {
               </p>
             </div>
 
+            {/* Error Message Alert */}
+            {errorMessage && (
+              <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 flex items-start gap-2.5 animate-in fade-in">
+                <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             {/* Register Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
@@ -100,7 +158,8 @@ export default function RegisterPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="John Doe"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all"
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -127,7 +186,8 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all"
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -153,8 +213,9 @@ export default function RegisterPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password"
-                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all"
+                    placeholder="Create a password (min. 8 chars)"
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
@@ -189,7 +250,8 @@ export default function RegisterPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm your password"
-                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all"
+                    disabled={isSubmitting}
+                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-white border border-neutral-300 rounded-lg text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
@@ -205,10 +267,20 @@ export default function RegisterPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full mt-2 py-3 px-4 bg-[#111827] hover:bg-black text-white text-sm font-semibold rounded-lg shadow-xs hover:shadow-sm active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full mt-2 py-3 px-4 bg-[#111827] hover:bg-black text-white text-sm font-semibold rounded-lg shadow-xs hover:shadow-sm active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <span>Create Account</span>
-                <ArrowRight size={15} />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Creating account...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Create Account</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             </form>
 
@@ -225,6 +297,7 @@ export default function RegisterPage() {
             {/* Social Button (Google) */}
             <button
               type="button"
+              onClick={() => alert("Google OAuth integration coming soon.")}
               className="w-full py-2.5 px-4 border border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50 rounded-lg text-xs sm:text-sm font-medium text-neutral-700 flex items-center justify-center gap-2.5 transition-all cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
