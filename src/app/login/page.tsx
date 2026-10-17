@@ -10,32 +10,35 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // UI only - no API call
+    // UI state only — ready for API integration
   };
 
   return (
-    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center py-16 px-6 bg-white">
-      <div className="w-full max-w-md border border-neutral-200 p-8 sm:p-10 bg-white">
-        {/* Title */}
+    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center py-16 px-6 bg-[#fafafa]">
+      <div className="w-full max-w-md bg-white border border-neutral-200 p-8 sm:p-12 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+        {/* Header */}
         <div className="mb-8">
-          <div className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500 mb-1">
-            Account
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-2 h-2 bg-black" aria-hidden="true" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-500 font-mono">
+              MOVEXA ACCESS
+            </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-black uppercase">
+          <h1 className="text-2xl font-bold tracking-tight text-black uppercase font-sans">
             Sign In
           </h1>
-          <p className="text-xs text-neutral-500 mt-1">
-            Enter your email and password to access your bookings.
+          <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed font-light">
+            Enter your email and password to manage your tickets and reserved seats.
           </p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email */}
+        {/* Login Form */}
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          {/* Email Address */}
           <div>
             <label
               htmlFor="email"
-              className="block text-xs uppercase tracking-wider font-medium text-neutral-700 mb-1.5"
+              className="block text-[11px] uppercase tracking-[0.12em] font-semibold text-neutral-800 mb-1.5"
             >
               Email Address
             </label>
@@ -45,10 +48,11 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               required
+              spellCheck={false}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@domain.com"
-              className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 focus:border-black outline-none transition-colors text-black placeholder:text-neutral-400 bg-white"
+              className="w-full px-3.5 py-3 text-sm border border-neutral-300 focus:border-black focus:ring-1 focus:ring-black outline-none transition-colors text-black placeholder:text-neutral-400 bg-white"
             />
           </div>
 
@@ -57,14 +61,15 @@ export default function LoginPage() {
             <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="password"
-                className="block text-xs uppercase tracking-wider font-medium text-neutral-700"
+                className="block text-[11px] uppercase tracking-[0.12em] font-semibold text-neutral-800"
               >
                 Password
               </label>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-[11px] text-neutral-500 hover:text-black uppercase tracking-wider font-medium"
+                className="text-[10px] uppercase tracking-[0.14em] text-neutral-500 hover:text-black font-mono transition-colors cursor-pointer"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
@@ -78,16 +83,16 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3.5 py-2.5 text-sm border border-neutral-300 focus:border-black outline-none transition-colors text-black placeholder:text-neutral-400 bg-white"
+              className="w-full px-3.5 py-3 text-sm border border-neutral-300 focus:border-black focus:ring-1 focus:ring-black outline-none transition-colors text-black placeholder:text-neutral-400 bg-white"
             />
           </div>
 
-          {/* Remember me & Forgot Password */}
-          <div className="flex items-center justify-between text-xs">
-            <label className="flex items-center gap-2 cursor-pointer text-neutral-600">
+          {/* Remember me & Recovery */}
+          <div className="flex items-center justify-between text-xs pt-0.5">
+            <label className="flex items-center gap-2 cursor-pointer select-none text-neutral-600">
               <input
                 type="checkbox"
-                className="w-3.5 h-3.5 border-neutral-300 accent-black cursor-pointer"
+                className="w-3.5 h-3.5 border-neutral-300 accent-black cursor-pointer rounded-none"
               />
               <span>Remember me</span>
             </label>
@@ -100,22 +105,22 @@ export default function LoginPage() {
             </a>
           </div>
 
-          {/* Submit */}
+          {/* Action Button */}
           <button
             type="submit"
-            className="w-full py-3 bg-black text-white hover:bg-neutral-800 text-xs uppercase tracking-widest font-semibold transition-colors cursor-pointer mt-2"
+            className="w-full py-3.5 bg-black text-white hover:bg-neutral-800 active:scale-[0.99] text-xs uppercase tracking-[0.14em] font-semibold transition-all duration-150 cursor-pointer mt-2"
           >
             Sign In
           </button>
         </form>
 
-        {/* Switch Link */}
+        {/* Switch to Register */}
         <div className="mt-8 pt-6 border-t border-neutral-100 text-center">
           <p className="text-xs text-neutral-500">
             Do not have an account?{" "}
             <Link
               href="/register"
-              className="font-semibold text-black hover:underline"
+              className="font-semibold text-black hover:underline underline-offset-4"
             >
               Register here
             </Link>
